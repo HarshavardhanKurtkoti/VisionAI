@@ -25,11 +25,16 @@ CLASS_NAMES = [
 MODEL_PATH = os.path.join(os.path.dirname(__file__), 'notebook/eye_disease_model.h5')
 IMAGE_SIZE = (224, 224)
 
-# Load the trained model once at startup, with custom_objects for KerasLayer
-model = keras.models.load_model(
-    'eye_disease_model.h5',  # Updated path to match Docker context
-    custom_objects={'KerasLayer': hub.KerasLayer}
-)
+model = None  # Do not load at startup
+
+def get_model():
+    global model
+    if model is None:
+        model = keras.models.load_model(
+            'eye_disease_model.h5',
+            custom_objects={'KerasLayer': hub.KerasLayer}
+        )
+    return model
 
 def preprocess_image(file_stream):
     # Read image from file stream
@@ -56,10 +61,12 @@ def predict():
     file = request.files['image']
     try:
         img = preprocess_image(file)
-        preds = model.predict(img)
+        model_instance = get_model()
+        preds = model_instance.predict(img)
         pred_idx = np.argmax(preds, axis=1)[0]
         diagnosis = CLASS_NAMES[pred_idx]
         confidence = float(np.max(preds))
+        tf.keras.backend.clear_session()  # Free up memory
         return jsonify({'diagnosis': diagnosis, 'confidence': confidence})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
