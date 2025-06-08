@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Vision AI - Eye Disease Detection
+  Custom styles for the application.
+*/
+
 html {
   background-color: #f9fafb;
 }
