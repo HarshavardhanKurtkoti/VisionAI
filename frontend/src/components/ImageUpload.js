@@ -40,7 +40,8 @@ const ImageUpload = ({ onResult }) => {
     try {
       const formData = new FormData();
       formData.append('image', selectedFile);
-      const response = await fetch('http://localhost:5000/predict', {
+      const apiUrl = import.meta.env.VITE_REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/predict`, {
         method: 'POST',
         body: formData,
       });
